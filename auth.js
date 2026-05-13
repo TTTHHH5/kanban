@@ -34,7 +34,11 @@ async function signInWithGitHub() {
 }
 
 async function signUpWithEmail(email, password) {
-  const { data, error } = await _supabase.auth.signUp({ email, password });
+  const { data, error } = await _supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: BASE_URL + 'board.html' },
+  });
   return { data, error };
 }
 
