@@ -3,13 +3,15 @@
 
 ## 1. 기술 스택
 
-| 레이어 | 현재 (v1.1) | 향후 (v2.0) | 비고 |
+| 레이어 | 현재 (v2.0) | 향후 (v3.0) | 비고 |
 |--------|------------|------------|------|
 | 마크업 | HTML5 | HTML5 | draggable 네이티브 지원 |
 | 스타일 | CSS3 (Flexbox) | CSS3 (Flexbox) | — |
 | 로직 | Vanilla JS (ES6+) | Vanilla JS (ES6+) | — |
-| 사용자 식별 | Guest ID (crypto.randomUUID) | Supabase Auth | 동일한 currentUser 인터페이스 유지 |
-| 저장소 | localStorage (사용자별 키) | Supabase DB | Storage 모듈만 교체 |
+| 인증 | Supabase Auth (OAuth + 이메일) | Supabase Auth | `auth.js` 모듈로 분리 |
+| 보드 저장소 | localStorage (사용자별 키) | Supabase DB | Storage 모듈만 교체 예정 |
+| 배포 | GitHub Pages (Actions 자동 배포) | GitHub Pages | push → 자동 배포 |
+| CDN | @supabase/supabase-js@2 | — | UMD 빌드, 전역 `supabase` 객체 |
 
 ---
 
@@ -17,9 +19,12 @@
 
 ```
 day03/
-├── index.html        — 보드 전체 마크업 (헤더 유저 영역 포함)
-├── style.css         — 전역 스타일
-├── app.js            — 인터랙션 로직 (드래그앤드롭, 모달, 카드 CRUD)
+├── index.html        — 랜딩 페이지 (Google/GitHub/이메일 로그인)
+├── landing.css       — 랜딩 페이지 전용 스타일
+├── board.html        — 칸반 보드 (인증 후 접근, auth guard 포함)
+├── style.css         — 보드 스타일
+├── auth.js           — Supabase 인증 모듈 (OAuth, 이메일, 세션 관리)
+├── app.js            — 보드 인터랙션 로직 (드래그앤드롭, 모달, 카드 CRUD)
 ├── storage.js        — 스토리지 추상화 모듈 (localStorage ↔ Supabase 교체 지점)
 ├── plan.md           — 구현 계획
 └── docs/
@@ -34,41 +39,72 @@ day03/
 
 ---
 
-## 3. 사용자 식별 구조
+## 3. 인증 구조
+
+### auth.js 모듈
+
+Supabase 클라이언트를 초기화하고 인증 관련 함수를 전역으로 노출한다.
+`board.html`과 `index.html` 모두 이 모듈을 로드한다.
+
+```js
+// 초기화
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const BASE_URL = new URL('./', window.location.href).href;  // 로컬/GitHub Pages 모두 대응
+
+// 노출 함수
+getAuthUser()           // 현재 세션의 사용자 반환 (없으면 null)
+signInWithGoogle()      // Google OAuth 로그인
+signInWithGitHub()      // GitHub OAuth 로그인
+signUpWithEmail(email, password)   // 이메일 회원가입 (emailRedirectTo: board.html)
+signInWithEmail(email, password)   // 이메일 로그인
+signOut()               // 로그아웃
+onAuthStateChange(cb)   // 세션 변경 콜백
+```
 
 ### currentUser 객체
 
-앱 전체에서 단일 `currentUser` 상태로 현재 사용자를 관리한다.
-인증 전후 동일한 인터페이스를 유지하여 auth 연동 시 교체 범위를 최소화한다.
+`app.js`에서 `getAuthUser()`로 받아 전역 상태로 관리한다.
 
 ```typescript
 type User = {
-  id: string;           // 게스트: crypto.randomUUID(), 인증 후: Supabase user.id
-  name: string;         // 게스트: "Guest", 인증 후: 사용자 이름
-  email: string | null; // 게스트: null, 인증 후: 이메일
-  isGuest: boolean;     // 게스트 여부 플래그
+  id: string;           // Supabase user.id (UUID)
+  name: string;         // full_name → user_name → email 앞부분 순서로 fallback
+  email: string;
+  avatar: string | null; // avatar_url (소셜 로그인 시 제공)
+  isGuest: boolean;     // 항상 false (v2.0에서 게스트 모드 제거)
 }
 ```
 
-### 게스트 ID 발급 흐름
-
-```
-DOMContentLoaded
-  → localStorage.getItem('kanban_guest_id') 존재?
-      예 → 해당 ID를 currentUser.id 로 사용
-      아니오 → crypto.randomUUID() 생성 → localStorage.setItem('kanban_guest_id', id)
-  → currentUser = { id, name: 'Guest', email: null, isGuest: true }
-```
-
-### 향후 Supabase 전환 시
+### board.html 인증 가드
 
 ```js
-// 현재 (게스트)
-currentUser = { id: 'uuid-xxxx', name: 'Guest', email: null, isGuest: true }
+// app.js init() 진입점
+async function init() {
+  const user = await getAuthUser();
+  if (!user) {
+    window.location.href = 'index.html';  // 미인증 → 랜딩으로
+    return;
+  }
+  currentUser = user;
+  renderUserInfo();
+  // ... 보드 로드
+}
+```
 
-// 전환 후 (인증)
-const { data: { user } } = await supabase.auth.getUser();
-currentUser = { id: user.id, name: user.user_metadata.name, email: user.email, isGuest: false }
+### index.html 자동 리다이렉트
+
+```js
+// 이미 로그인된 경우 보드로 바로 이동
+const user = await getAuthUser();
+if (user) { window.location.href = 'board.html'; return; }
+```
+
+### OAuth Redirect URL
+
+```
+redirectTo: BASE_URL + 'board.html'
+// 로컬: http://127.0.0.1:5500/board.html
+// 배포: https://ttthhh5.github.io/kanban/board.html
 ```
 
 ---

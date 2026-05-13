@@ -187,19 +187,29 @@ erDiagram
 
 ---
 
-## 5. CRUD 명세 (현재 — localStorage)
+## 5. CRUD 명세 (현재 v2.0 — Supabase Auth + localStorage)
 
-### 게스트 ID 초기화
+### 사용자 초기화 (인증 기반)
 
 ```js
-function initGuestUser() {
-  let guestId = localStorage.getItem('kanban_guest_id');
-  if (!guestId) {
-    guestId = crypto.randomUUID();
-    localStorage.setItem('kanban_guest_id', guestId);
-  }
-  return { id: guestId, name: 'Guest', email: null, isGuest: true };
+// auth.js
+async function getAuthUser() {
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) return null;
+  const u = session.user;
+  return {
+    id: u.id,
+    name: u.user_metadata?.full_name || u.user_metadata?.user_name || u.email?.split('@')[0],
+    email: u.email,
+    avatar: u.user_metadata?.avatar_url || null,
+    isGuest: false,
+  };
 }
+
+// app.js — init()
+const user = await getAuthUser();
+if (!user) { window.location.href = 'index.html'; return; }
+currentUser = user;
 ```
 
 ### 읽기 (Load)
@@ -240,9 +250,14 @@ async function save(userId, data) {
 ## 6. 데이터 생명주기
 
 ```
-[초기화]
-  initGuestUser() → currentUser 설정
-  Storage.load(currentUser.id)
+[인증 — index.html]
+  Google/GitHub OAuth 또는 이메일/비밀번호 로그인
+  → Supabase 세션 생성 → board.html 리다이렉트
+
+[초기화 — board.html]
+  getAuthUser() → 미인증 시 index.html 리다이렉트
+  → currentUser = { id: supabase.user.id, name, email, avatar }
+  → Storage.load(currentUser.id)
     → 데이터 있음 → 보드 렌더링
     → 데이터 없음 → HTML 기본 카드 유지
 
@@ -255,9 +270,12 @@ async function save(userId, data) {
 [카드 이동]
   drop → DOM 순서 변경 → Storage.save()
 
-[v2.0 인증 후]
-  Supabase signIn → currentUser.id = supabase user.id
-  → Storage.load(currentUser.id) 로 동일 인터페이스로 서버 데이터 로드
+[로그아웃]
+  signOut() → Supabase 세션 제거 → index.html 리다이렉트
+
+[v3.0 Storage 전환]
+  storage.js 내부만 교체
+  Storage.load/save → Supabase DB 호출 (app.js 수정 없음)
 ```
 
 ---

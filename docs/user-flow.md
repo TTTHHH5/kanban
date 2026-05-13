@@ -3,12 +3,13 @@
 
 ## 1. 전체 여정 개요
 
-사용자의 주요 여정은 네 가지입니다.
+사용자의 주요 여정은 다섯 가지입니다.
 
-1. **초기 진입** — 게스트 ID 발급 및 보드 복원
-2. **카드 이동** — 드래그앤드롭으로 컬럼 간 상태 변경
-3. **카드 추가** — 모달을 통해 새 카드 생성
-4. **카드 삭제** — hover 후 삭제 버튼으로 카드 제거
+1. **인증** — 랜딩 페이지에서 Google/GitHub OAuth 또는 이메일/비밀번호로 로그인·회원가입
+2. **초기 진입** — 인증 후 보드 진입 및 데이터 복원
+3. **카드 이동** — 드래그앤드롭으로 컬럼 간 상태 변경
+4. **카드 추가** — 모달을 통해 새 카드 생성
+5. **카드 삭제** — hover 후 삭제 버튼으로 카드 제거
 
 ---
 
@@ -16,26 +17,38 @@
 
 ```mermaid
 flowchart TD
-    A([브라우저에서 index.html 열기]) --> B[게스트 ID 확인·발급\ncurrentUser 초기화]
-    B --> C[사용자 데이터 로드\nStorage.load userId]
-    C --> D{저장 데이터 있음?}
-    D -- 예 --> E[저장된 카드 복원]
-    D -- 아니오 --> F[기본 카드 표시]
-    E --> G[보드 렌더링 완료]
-    F --> G
-    G --> H{어떤 작업?}
+    A([브라우저 접속]) --> B{이미 로그인됨?}
+    B -- 예 --> G
+    B -- 아니오 --> C[index.html 랜딩 페이지]
+    C --> D{로그인 방법 선택}
+    D -- Google/GitHub --> E[OAuth 리다이렉트]
+    D -- 이메일/비밀번호 --> F[로그인 or 회원가입]
+    E --> G[board.html 진입]
+    F --> F1{이메일 인증 필요?}
+    F1 -- 예 --> F2[인증 메일 확인]
+    F2 --> G
+    F1 -- 아니오 --> G
+    G[인증 확인\ngetAuthUser] --> H[사용자 데이터 로드\nStorage.load userId]
+    H --> I{저장 데이터 있음?}
+    I -- 예 --> J[저장된 카드 복원]
+    I -- 아니오 --> K[기본 카드 표시]
+    J --> L[보드 렌더링 완료]
+    K --> L
+    L --> M{어떤 작업?}
 
-    H --> I[카드 드래그]
-    H --> J[카드 추가]
-    H --> K[카드 삭제]
+    M --> I[카드 드래그]
+    M --> J[카드 추가]
+    M --> K[카드 삭제]
+    M --> N[로그아웃]
+    N --> N1[signOut\n세션 초기화] --> C
 
     I --> I1[드래그 시작\n반투명 + 회전]
     I1 --> I2[대상 컬럼 이동\n하이라이트]
     I2 --> I3[placeholder 표시]
     I3 --> I4{드롭}
     I4 -- 원하는 위치 --> I5[카드 이동\n카운트 갱신\nStorage.save]
-    I4 -- 취소 --> H
-    I5 --> H
+    I4 -- 취소 --> M
+    I5 --> M
 
     J --> J1[+ 카드 추가 클릭]
     J1 --> J2[모달 열림]
@@ -44,40 +57,76 @@ flowchart TD
     J4 -- 아니오 --> J5[카드 추가\nStorage.save\n모달 닫힘]
     J4 -- 예 --> J3
     J3 -- Esc/오버레이 --> J6[모달 닫힘]
-    J5 --> H
-    J6 --> H
+    J5 --> M
+    J6 --> M
 
     K --> K1[카드 hover\n✕ 표시]
     K1 --> K2{✕ 클릭?}
     K2 -- 예 --> K3[카드 삭제\nStorage.save]
-    K2 -- 아니오 --> H
-    K3 --> H
+    K2 -- 아니오 --> M
+    K3 --> M
 ```
 
 ---
 
-## 3. 페이지 로드 및 사용자 초기화 흐름
+## 3. 인증 흐름 상세
 
 ```mermaid
-flowchart LR
-    A([DOMContentLoaded]) --> B[localStorage에서\nkanban_guest_id 확인]
-    B --> C{게스트 ID 있음?}
-    C -- 예 --> E[기존 ID 사용]
-    C -- 아니오 --> D[crypto.randomUUID 생성\nlocalStorage 저장]
-    D --> E
-    E --> F[currentUser 초기화\nid / name:Guest / isGuest:true]
-    F --> G[Storage.load currentUser.id]
-    G --> H{보드 데이터 있음?}
-    H -- 예 --> I[저장 데이터로 카드 렌더링]
-    H -- 아니오 --> J[HTML 기본 카드 유지]
-    I --> K[updateCounts 호출]
-    J --> K
-    K --> L[보드 사용 준비 완료]
+flowchart TD
+    subgraph 랜딩페이지 index.html
+        A([페이지 로드]) --> B[getAuthUser 호출]
+        B --> C{세션 있음?}
+        C -- 예 --> D[board.html 리다이렉트]
+        C -- 아니오 --> E[로그인 UI 표시]
+        E --> F{로그인 방법}
+        F -- Google --> G[signInWithGoogle\nOAuth 리다이렉트]
+        F -- GitHub --> H[signInWithGitHub\nOAuth 리다이렉트]
+        F -- 이메일 로그인 --> I[signInWithEmail\n성공 → board.html]
+        F -- 이메일 회원가입 --> J[signUpWithEmail\nemailRedirectTo: board.html]
+        J --> K{이메일 인증 필요?}
+        K -- 예 --> L[인증 메일 발송\n사용자에게 안내]
+        K -- 아니오 --> D
+    end
+
+    subgraph 보드페이지 board.html
+        M([페이지 로드]) --> N[getAuthUser 호출]
+        N --> O{세션 있음?}
+        O -- 아니오 --> P[index.html 리다이렉트]
+        O -- 예 --> Q[currentUser 설정\nrenderUserInfo]
+        Q --> R[Storage.load currentUser.id]
+        R --> S{데이터 있음?}
+        S -- 예 --> T[보드 복원]
+        S -- 아니오 --> U[기본 카드 표시]
+        T --> V[보드 준비 완료]
+        U --> V
+    end
+```
+
+## 4. 이메일 회원가입 상세 흐름
+
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant L as 랜딩페이지
+    participant A as auth.js
+    participant S as Supabase
+    participant E as 이메일
+
+    U->>L: 이메일 + 비밀번호 입력 후 회원가입
+    L->>A: signUpWithEmail(email, password)
+    A->>S: supabase.auth.signUp({ emailRedirectTo: board.html })
+    S->>E: 인증 메일 발송
+    A-->>L: { data, error }
+    L->>U: "인증 메일을 확인해주세요" 안내
+
+    U->>E: 인증 링크 클릭
+    E->>S: 토큰 검증
+    S-->>U: board.html로 리다이렉트 (세션 생성)
 ```
 
 ---
 
-## 4. 카드 이동 상세 흐름
+## 5. 카드 이동 상세 흐름
 
 ```mermaid
 sequenceDiagram
@@ -107,7 +156,7 @@ sequenceDiagram
 
 ---
 
-## 5. 카드 추가 상세 흐름
+## 6. 카드 추가 상세 흐름
 
 ```mermaid
 sequenceDiagram
@@ -140,23 +189,14 @@ sequenceDiagram
 
 ---
 
-## 6. 향후 인증 흐름 (v2.0 — Supabase Auth)
+## 7. 향후 Storage 전환 흐름 (v3.0 — Supabase DB)
+
+현재 보드 데이터는 localStorage에 저장됩니다. v3.0에서 Supabase DB로 전환 시
+`storage.js` 내부만 교체하면 `app.js`는 수정 없이 동작합니다.
 
 ```mermaid
-flowchart TD
-    A([앱 진입]) --> B[Supabase.auth.getSession]
-    B --> C{세션 있음?}
-    C -- 예 --> D[currentUser = Supabase user\nisGuest: false]
-    C -- 아니오 --> E[게스트 모드\n현재 v1.1 흐름]
-    D --> F[Storage.load currentUser.id\nSupabase DB에서 로드]
-    E --> G[Storage.load currentUser.id\nlocalStorage에서 로드]
-    F --> H[보드 렌더링]
-    G --> H
-
-    H --> I{로그인 버튼 클릭?}
-    I -- 예 --> J[Supabase 로그인 UI]
-    J --> K{로그인 성공?}
-    K -- 예 --> L[게스트 데이터 마이그레이션 여부 확인]
-    L --> M[currentUser 갱신\nStorage 전환\n보드 새로고침]
-    K -- 아니오 --> H
+flowchart LR
+    A[app.js] -->|Storage.load / Storage.save| B[storage.js]
+    B -->|현재 v2.0| C[localStorage\nkanban_board_{userId}]
+    B -.->|v3.0 교체 예정| D[Supabase DB\nboards / cards 테이블]
 ```

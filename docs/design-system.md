@@ -102,25 +102,62 @@ header
   우측: .user-area (유저 정보 영역)
 ```
 
-### User Area (`.user-area`)
-헤더 우측에 위치하는 사용자 식별 영역. 현재는 게스트 배지만 표시하고,
-v2.0 인증 도입 시 아바타 + 이름 + 로그아웃 버튼으로 확장된다.
+### Landing Page
+
+랜딩 페이지(`index.html`)의 카드 UI. `landing.css`로 스타일이 분리된다.
 
 ```
-현재 (v1.1 — 게스트):
-  .user-area
-    .user-badge  — "Guest" 텍스트 배지
-      background: rgba(255,255,255,0.15)
-      color: #fff
-      border-radius: 12px
-      padding: 4px 10px
-      font-size: 0.8rem
+body
+  background: linear-gradient(135deg, #0052cc → #0747a6 → #172b4d)
 
-향후 (v2.0 — 인증):
-  .user-area
-    .user-avatar  — 이니셜 원형 아바타 (32×32px)
-    .user-name    — 사용자 이름 텍스트
-    .logout-btn   — 로그아웃 버튼
+.landing-card
+  background: #fff
+  border-radius: 16px
+  max-width: 420px
+  padding: 48px 40px
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3)
+
+.btn-google
+  background: #fff, border: 1.5px solid #dadce0, color: #3c4043
+
+.btn-github
+  background: #24292e, color: #fff
+
+.divider — "또는 이메일로 계속하기" 구분선
+
+.email-form
+  input: border: 1.5px solid #dfe1e6, focus → #0052cc
+
+.btn-email
+  background: #0052cc (로그인 확인 버튼)
+
+.toggle-mode — "계정이 없으신가요?" + 회원가입 링크
+```
+
+### User Area (`.user-area`) — v2.0 구현 완료
+
+헤더 우측에 위치하는 사용자 정보 영역. 아바타 + 이름 + 로그아웃 버튼으로 구성.
+
+```
+.user-area
+  display: flex, align-items: center, gap: 10px
+
+  .user-avatar (소셜 프로필 이미지)
+    width: 32px, height: 32px
+    border-radius: 50%
+    border: 2px solid rgba(255,255,255,0.5)
+
+  .user-avatar--placeholder (이미지 없을 때 이니셜 원)
+    background: rgba(255,255,255,0.25)
+    font-weight: 700
+
+  .user-name
+    color: #fff, font-size: 0.875rem
+
+  .logout-btn
+    background: rgba(255,255,255,0.15)
+    border-radius: 6px, padding: 5px 12px
+    hover → rgba(255,255,255,0.28)
 ```
 
 ### Board

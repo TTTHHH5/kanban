@@ -5,10 +5,12 @@
 
 | 규칙 | 예시 |
 |------|------|
-| 파일명은 소문자 kebab-case | `index.html`, `style.css`, `app.js`, `storage.js` |
-| HTML / CSS / JS 는 반드시 분리 | `<style>`, `<script>` 인라인 사용 금지 |
+| 파일명은 소문자 kebab-case | `index.html`, `board.html`, `landing.css`, `auth.js` |
+| HTML / CSS / JS 는 반드시 분리 | `<style>`, `<script>` 인라인 사용 금지 (단, 랜딩 초기화 스크립트 예외) |
+| 인증 로직은 `auth.js`에 격리 | `app.js`에서 직접 Supabase 호출 금지 |
 | 스토리지 로직은 `storage.js`에 격리 | `app.js`에서 직접 `localStorage` 호출 금지 |
-| 각 파일은 하나의 책임만 가짐 | `app.js`: UI 로직, `storage.js`: 저장소 추상화 |
+| 각 파일은 하나의 책임만 가짐 | `auth.js`: 인증, `app.js`: 보드 UI, `storage.js`: 저장소 |
+| 페이지별 CSS 분리 | 랜딩: `landing.css`, 보드: `style.css` |
 
 ---
 
@@ -82,7 +84,7 @@ let targetListId = null;
 let currentUser = null;   // 항상 앱 전체에서 단일 참조
 
 // 함수: camelCase 동사+명사
-function initGuestUser() { }     // 사용자 초기화
+function renderUserInfo() { }    // 헤더에 아바타 + 이름 + 로그아웃 렌더링
 function createCard(text, userId) { }
 function addDeleteButton(card) { }
 function updateCounts() { }
@@ -91,20 +93,43 @@ function confirmAdd() { }
 function closeModal() { }
 function getDragAfterElement(list, y) { }
 function renderBoard(data) { }   // 데이터 → DOM 렌더링
+
+// auth.js 노출 함수 (전역)
+async function getAuthUser() { }
+async function signInWithGoogle() { }
+async function signInWithGitHub() { }
+async function signUpWithEmail(email, password) { }
+async function signInWithEmail(email, password) { }
+async function signOut() { }
 ```
+
+### 인증 모듈 (`auth.js`)
+```js
+// 좋음: auth.js 함수를 통해 인증 처리
+const user = await getAuthUser();
+await signInWithGoogle();
+await signOut();
+
+// 나쁨: app.js에서 Supabase 직접 호출
+const { data } = await _supabase.auth.getSession();
+```
+
+`auth.js`는 `board.html`과 `index.html` 모두에서 Supabase CDN 이후에 로드한다.
 
 ### 사용자 상태 (`currentUser`)
 ```js
 // 앱 전체에서 단일 전역 상태
 let currentUser = null;
 
-// 초기화 시 반드시 설정
-currentUser = initGuestUser();
+// 초기화: Supabase 세션에서 가져옴
+const user = await getAuthUser();
+if (!user) { window.location.href = 'index.html'; return; }
+currentUser = user;
 
 // 접근 패턴
-currentUser.id       // 스토리지 키, 카드 생성 시 사용
-currentUser.isGuest  // 인증 여부 분기
-currentUser.name     // 헤더 표시용
+currentUser.id      // 스토리지 키, 카드 생성 시 사용
+currentUser.name    // 헤더 표시용
+currentUser.avatar  // 아바타 이미지 URL (없으면 null → 이니셜 표시)
 
 // 나쁨: userId를 직접 하드코딩
 Storage.save('anonymous', data);

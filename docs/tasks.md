@@ -25,10 +25,10 @@ flowchart TD
     T09["✅ TASK-09\n카드 수 카운터"]
     T10["✅ TASK-10\nStorage 모듈"]
     T11["✅ TASK-11\n보드 복원"]
-    T12["🔜 TASK-12\n검증"]
-    T13["🔜 TASK-13\nSupabase 초기화"]
-    T14["🔜 TASK-14\n로그인 UI"]
-    T15["🔜 TASK-15\nSupabase Auth"]
+    T12["✅ TASK-12\n검증"]
+    T13["✅ TASK-13\nSupabase 초기화"]
+    T14["✅ TASK-14\n로그인 UI"]
+    T15["✅ TASK-15\nSupabase Auth"]
     T16["🔜 TASK-16\nStorage 교체"]
 
     T00 --> T01
@@ -67,14 +67,14 @@ flowchart TD
     style T09 fill:#0052cc,stroke:#0747a6,color:#fff
     style T10 fill:#006644,stroke:#004d33,color:#fff
     style T11 fill:#006644,stroke:#004d33,color:#fff
-    style T12 fill:#ff8b00,stroke:#cc6f00,color:#fff
-    style T13 fill:#fff0f0,stroke:#de350b
-    style T14 fill:#fff0f0,stroke:#de350b
-    style T15 fill:#fff0f0,stroke:#de350b
+    style T12 fill:#006644,stroke:#004d33,color:#fff
+    style T13 fill:#006644,stroke:#004d33,color:#fff
+    style T14 fill:#006644,stroke:#004d33,color:#fff
+    style T15 fill:#006644,stroke:#004d33,color:#fff
     style T16 fill:#fff0f0,stroke:#de350b
 ```
 
-> 색이 채워진 노드(보라·회색·파랑·초록·주황): 완료 · 흰 배경 빨강: 미래 예정 (Phase 5)
+> 색이 채워진 노드(보라·회색·파랑·초록): 완료 · 흰 배경 빨강: 미래 예정 (Phase 5)
 
 ---
 
@@ -253,52 +253,70 @@ depends_on: TASK-10
 
 ## Phase 4: 검증
 
-### 🔜 TASK-12. 기능 체크리스트 검증
+### ✅ TASK-12. 기능 체크리스트 검증
 ```
-방법: 브라우저에서 index.html 직접 열기
-상태: 대기 (plan.md 검증 섹션 참조)
+방법: 브라우저에서 board.html 직접 열기
+상태: 완료
 
 체크 항목:
-  □ 게스트 ID 생성·유지 및 헤더 배지 표시
-  □ 초기 렌더링 (컬럼 3개, 카드 수 정확성)
-  □ 드래그앤드롭 (피드백, 하이라이트, placeholder, 삽입, 카운트 갱신)
-  □ 드롭 후 localStorage kanban_board_{userId} 저장 확인
-  □ 카드 추가 (data-user-id 확인, 빈값 방지, 모달 동작)
-  □ 카드 삭제 (저장 반영 확인)
-  □ 새로고침 후 보드 복원
-  □ 다른 탭 = 다른 게스트 ID = 독립 데이터
-  □ 엣지 케이스 (빈 컬럼 드롭, 전체 삭제 후 추가)
+  ✅ 초기 렌더링 (컬럼 3개, 카드 수 정확성)
+  ✅ 드래그앤드롭 (피드백, 하이라이트, placeholder, 삽입, 카운트 갱신)
+  ✅ 드롭 후 localStorage kanban_board_{userId} 저장 확인
+  ✅ 카드 추가 (data-user-id 확인, 빈값 방지, 모달 동작)
+  ✅ 카드 삭제 (저장 반영 확인)
+  ✅ 새로고침 후 보드 복원
+  ✅ 엣지 케이스 (빈 컬럼 드롭, 전체 삭제 후 추가)
 ```
 
 ---
 
-## Phase 5: Supabase 인증 연동 (v2.0 — 미래 계획)
+## Phase 5: Supabase 인증 연동 (v2.0 — 완료)
 
-### 🔜 TASK-13. Supabase 프로젝트 초기화
+### ✅ TASK-13. Supabase 프로젝트 초기화
 ```
-작업:
-  - Supabase 프로젝트 생성
-  - boards, columns, cards 테이블 생성 (docs/database-design.md 스키마 참조)
-  - Row Level Security 정책 설정
-  - 환경 변수: SUPABASE_URL, SUPABASE_ANON_KEY
+파일: auth.js
+상태: 완료
+
+구현 내용:
+  - Supabase 프로젝트 연결 (pqtmnbbmrovkjmmbudbk.supabase.co)
+  - Google OAuth 제공자 활성화 (Google Cloud Console OAuth Client 등록)
+  - GitHub OAuth 제공자 활성화 (GitHub OAuth App 등록)
+  - Email 제공자 활성화 (이메일 인증 메일 발송)
+  - Supabase URL Configuration 설정:
+      Site URL: https://ttthhh5.github.io/kanban/
+      Redirect URL: https://ttthhh5.github.io/kanban/board.html
 depends_on: TASK-12
 ```
 
-### 🔜 TASK-14. 로그인 UI 구현
+### ✅ TASK-14. 로그인 UI 구현
 ```
-작업:
-  - 헤더 .user-area에 "로그인" 버튼 추가
-  - 로그인 모달 (이메일/소셜 버튼)
-  - 인증 후 아바타 + 이름 + 로그아웃 버튼으로 교체
+파일: index.html, landing.css
+상태: 완료
+
+구현 내용:
+  - index.html을 랜딩 페이지로 전환 (기존 보드 → board.html로 이동)
+  - Google로 계속하기 / GitHub로 계속하기 소셜 버튼
+  - "또는 이메일로 계속하기" 구분선
+  - 이메일 + 비밀번호 입력 폼
+  - 로그인 / 회원가입 모드 전환 버튼
+  - 에러 메시지 한글 번역 (redirect_uri_mismatch, 잘못된 비밀번호 등)
+  - 이미 로그인된 경우 board.html 자동 리다이렉트
 depends_on: TASK-13
 ```
 
-### 🔜 TASK-15. Supabase Auth 연동
+### ✅ TASK-15. Supabase Auth 연동
 ```
-작업:
-  - supabase.auth.signIn / signOut / onAuthStateChange
-  - currentUser 갱신 (isGuest: false, id: Supabase user.id)
-  - 게스트 → 인증 전환 시 데이터 마이그레이션 여부 확인
+파일: auth.js, app.js, board.html
+상태: 완료
+
+구현 내용:
+  - auth.js: getAuthUser, signInWithGoogle, signInWithGitHub,
+             signUpWithEmail(emailRedirectTo 포함), signInWithEmail, signOut
+  - board.html: Supabase CDN + auth.js 로드
+  - app.js: initGuestUser() 제거, getAuthUser()로 대체
+    - 미인증 시 index.html 리다이렉트
+    - renderUserInfo(): 아바타(이미지 or 이니셜) + 이름 + 로그아웃 버튼 렌더링
+  - style.css: .user-avatar, .user-name, .logout-btn 스타일 추가
 depends_on: TASK-14
 ```
 
@@ -308,5 +326,20 @@ depends_on: TASK-14
   - storage.js 내부만 교체 (app.js 수정 없음)
   - Storage.load(userId): Supabase boards/cards 조회
   - Storage.save(userId, data): Supabase upsert
+  - boards, columns, cards 테이블 생성 + RLS 설정 (database-design.md 스키마 참조)
 depends_on: TASK-13, TASK-15
+```
+
+## Phase 6: 배포 (완료)
+
+### ✅ TASK-17. GitHub Pages 배포
+```
+파일: .github/workflows/deploy.yml (kanban 레포)
+상태: 완료
+
+구현 내용:
+  - 별도 kanban 레포 (https://github.com/TTTHHH5/kanban) 생성
+  - GitHub Actions 워크플로우: main 브랜치 push 시 자동 배포
+  - 배포 URL: https://ttthhh5.github.io/kanban/
+  - kosa 모노레포 day03/ 폴더에도 동기화
 ```
