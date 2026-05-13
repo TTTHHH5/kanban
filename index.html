@@ -169,12 +169,15 @@
           return;
         }
 
-        if (!data.session) {
-          signupSuccess.textContent = '가입 확인 이메일을 발송했습니다. 이메일을 확인 후 로그인해주세요.';
-          signupBtn.disabled = false;
-          signupBtn.textContent = '회원가입';
-          return;
-        }
+        // ── 이메일 인증 활성화 시 아래 주석 해제 ──────────────────
+        // Supabase 대시보드 Authentication → Providers → Email → Confirm email ON 필요
+        // if (!data.session) {
+        //   signupSuccess.textContent = '가입 확인 이메일을 발송했습니다. 이메일을 확인 후 로그인해주세요.';
+        //   signupBtn.disabled = false;
+        //   signupBtn.textContent = '회원가입';
+        //   return;
+        // }
+        // ──────────────────────────────────────────────────────────
 
         window.location.href = 'board.html';
       });
