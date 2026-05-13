@@ -33,6 +33,16 @@ async function signInWithGitHub() {
   });
 }
 
+async function signUpWithEmail(email, password) {
+  const { data, error } = await _supabase.auth.signUp({ email, password });
+  return { data, error };
+}
+
+async function signInWithEmail(email, password) {
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+  return { data, error };
+}
+
 async function signOut() {
   await _supabase.auth.signOut();
 }
