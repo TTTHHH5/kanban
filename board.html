@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kanban Board</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Kanban Board</h1>
+    <div class="user-area"></div>
+  </header>
+
+  <main class="board">
+    <section class="column" id="todo" data-status="todo">
+      <div class="column-header">
+        <h2>To Do</h2>
+        <span class="card-count">0</span>
+      </div>
+      <div class="card-list" id="todo-list">
+        <div class="card" draggable="true">
+          <p>디자인 시안 검토</p>
+        </div>
+        <div class="card" draggable="true">
+          <p>요구사항 문서 작성</p>
+        </div>
+        <div class="card" draggable="true">
+          <p>API 명세서 정리</p>
+        </div>
+      </div>
+      <button class="add-card-btn" data-column="todo-list">+ 카드 추가</button>
+    </section>
+
+    <section class="column" id="in-progress" data-status="in-progress">
+      <div class="column-header">
+        <h2>In Progress</h2>
+        <span class="card-count">0</span>
+      </div>
+      <div class="card-list" id="in-progress-list">
+        <div class="card" draggable="true">
+          <p>로그인 기능 개발</p>
+        </div>
+        <div class="card" draggable="true">
+          <p>DB 스키마 설계</p>
+        </div>
+      </div>
+      <button class="add-card-btn" data-column="in-progress-list">+ 카드 추가</button>
+    </section>
+
+    <section class="column" id="done" data-status="done">
+      <div class="column-header">
+        <h2>Done</h2>
+        <span class="card-count">0</span>
+      </div>
+      <div class="card-list" id="done-list">
+        <div class="card" draggable="true">
+          <p>프로젝트 환경 설정</p>
+        </div>
+      </div>
+      <button class="add-card-btn" data-column="done-list">+ 카드 추가</button>
+    </section>
+  </main>
+
+  <!-- 카드 추가 모달 -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h3>새 카드 추가</h3>
+      <textarea id="card-input" placeholder="카드 내용을 입력하세요" rows="3"></textarea>
+      <div class="modal-actions">
+        <button id="modal-cancel">취소</button>
+        <button id="modal-confirm">추가</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

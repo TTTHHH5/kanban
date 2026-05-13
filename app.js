@@ -11,21 +11,26 @@ const cardInput = document.getElementById('card-input');
 const modalCancel = document.getElementById('modal-cancel');
 const modalConfirm = document.getElementById('modal-confirm');
 
-// ── 사용자 식별 ───────────────────────────────────────────────
+// ── 사용자 정보 렌더링 ────────────────────────────────────────
 
-function initGuestUser() {
-  let guestId = localStorage.getItem('kanban_guest_id');
-  if (!guestId) {
-    guestId = crypto.randomUUID();
-    localStorage.setItem('kanban_guest_id', guestId);
-  }
-  return { id: guestId, name: 'Guest', email: null, isGuest: true };
-}
-
-function renderUserBadge() {
+function renderUserInfo() {
   const userArea = document.querySelector('.user-area');
   if (!userArea) return;
-  userArea.innerHTML = `<span class="user-badge">${currentUser.name}</span>`;
+
+  const avatarHtml = currentUser.avatar
+    ? `<img class="user-avatar" src="${currentUser.avatar}" alt="${currentUser.name}" />`
+    : `<span class="user-avatar user-avatar--placeholder">${currentUser.name.charAt(0).toUpperCase()}</span>`;
+
+  userArea.innerHTML = `
+    ${avatarHtml}
+    <span class="user-name">${currentUser.name}</span>
+    <button class="logout-btn" id="logout-btn">로그아웃</button>
+  `;
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await signOut();
+    window.location.href = 'index.html';
+  });
 }
 
 // ── 보드 데이터 직렬화 ────────────────────────────────────────
@@ -81,7 +86,6 @@ board.addEventListener('dragstart', (e) => {
   if (!card) return;
   draggedCard = card;
   placeholder = createPlaceholder();
-  // setTimeout 없이는 dragstart 이미지가 dragging 상태로 캡처됨
   setTimeout(() => card.classList.add('dragging'), 0);
 });
 
@@ -240,14 +244,18 @@ function closeModal() {
 // ── 초기화 ────────────────────────────────────────────────────
 
 async function init() {
-  currentUser = initGuestUser();
-  renderUserBadge();
+  const user = await getAuthUser();
+  if (!user) {
+    window.location.href = 'index.html';
+    return;
+  }
+  currentUser = user;
+  renderUserInfo();
 
   const data = await Storage.load(currentUser.id);
   if (data && data.columns) {
     renderBoard(data);
   } else {
-    // 저장 데이터 없음 → HTML 기본 카드에 data 속성 부여 후 삭제 버튼 추가
     document.querySelectorAll('.card').forEach((card) => {
       card.dataset.id = crypto.randomUUID();
       card.dataset.userId = currentUser.id;

@@ -264,6 +264,48 @@ header h1 {
   background: #0747a6;
 }
 
+/* User info (board header) */
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.user-avatar--placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.user-name {
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
 /* Scrollbar */
 .board::-webkit-scrollbar {
   height: 8px;
