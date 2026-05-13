@@ -1,0 +1,278 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #172b4d;
+}
+
+header {
+  background: #0052cc;
+  color: #fff;
+  padding: 16px 24px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-badge {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s;
+}
+
+/* Board */
+.board {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  align-items: flex-start;
+  overflow-x: auto;
+  min-height: calc(100vh - 64px);
+}
+
+/* Column */
+.column {
+  background: #ebecf0;
+  border-radius: 10px;
+  width: 280px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  transition: background 0.2s;
+}
+
+.column.drag-over {
+  background: #d4e4ff;
+  outline: 2px dashed #0052cc;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 8px;
+}
+
+.column-header h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #5e6c84;
+}
+
+.card-count {
+  background: #dfe1e6;
+  color: #5e6c84;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 2px 8px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Card list */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 48px;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
+  position: relative;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.card.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+  transform: rotate(2deg) scale(1.02);
+}
+
+.card p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.card .delete-btn {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #97a0af;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.card:hover .delete-btn {
+  display: block;
+}
+
+.card .delete-btn:hover {
+  background: #ffebe6;
+  color: #de350b;
+}
+
+/* Drop placeholder */
+.drop-placeholder {
+  height: 60px;
+  border: 2px dashed #0052cc;
+  border-radius: 6px;
+  background: #e6f0ff;
+}
+
+/* Add card button */
+.add-card-btn {
+  background: none;
+  border: none;
+  color: #5e6c84;
+  font-size: 0.875rem;
+  padding: 8px 6px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  width: 100%;
+  transition: background 0.15s, color 0.15s;
+}
+
+.add-card-btn:hover {
+  background: #d4d8e0;
+  color: #172b4d;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  width: 340px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.modal textarea {
+  resize: vertical;
+  border: 2px solid #dfe1e6;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.modal textarea:focus {
+  border-color: #0052cc;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal-actions button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#modal-cancel {
+  background: #ebecf0;
+  color: #42526e;
+}
+
+#modal-cancel:hover {
+  background: #d4d8e0;
+}
+
+#modal-confirm {
+  background: #0052cc;
+  color: #fff;
+}
+
+#modal-confirm:hover {
+  background: #0747a6;
+}
+
+/* Scrollbar */
+.board::-webkit-scrollbar {
+  height: 8px;
+}
+.board::-webkit-scrollbar-track {
+  background: #dfe1e6;
+  border-radius: 4px;
+}
+.board::-webkit-scrollbar-thumb {
+  background: #b3b9c4;
+  border-radius: 4px;
+}
